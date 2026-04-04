@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch Sử Hoạt Động</title>
+    <link rel="stylesheet" href="css/style_history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+    <a href="profile.html" class="profile-header">
+        <img src="../img/profile.jpg" alt="Avatar" class="avatar-mini">
+        <span class="profile-name">Quang Việt</span>
+    </a>
+
+    <ul class="menu">
+        <li><a href="dashboard.html"><i class="fas fa-home"></i> Home / Dashboard</a></li>
+        <li><a href="datasensor.html"><i class="fas fa-list"></i> Data Sensor</a></li>
+        <li><a href="history.html" class="active"><i class="fas fa-history"></i> Action History</a></li>
+    </ul>
+</nav>
+
+    <main class="main-content">
+        <h1 class="page-title">Lịch Sử Hoạt Động</h1>
+
+        <div class="toolbar">
+            <div class="toolbar-top">
+                <div class="filters">
+                    <select id="deviceFilter" class="filter-select" onchange="loadHistory(1)">
+                        <option value="all">Tất cả thiết bị</option>
+                        <option value="1">Van Tưới</option>
+                        <option value="2">Máy Sưởi</option>
+                        <option value="3">Phun Sương</option>
+                    </select>
+
+                    <select id="actionFilter" class="filter-select" onchange="loadHistory(1)">
+                        <option value="all">Tất cả hành động</option>
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+
+                    <select id="limitSelect" class="filter-select" onchange="changeLimit()">
+                        <option value="10">10 / trang</option>
+                        <option value="15">15 / trang</option>
+                        <option value="20">20 / trang</option>
+                        <option value="25">25 / trang</option>
+                        <option value="30">30 / trang</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-search-row">
+                <input type="text" id="textSearch" class="text-search-input"
+                    placeholder="VD: 20:51 | 26/3 | 26/3/2026 | 20:51:16 26/3/2026"
+                    onkeydown="if(event.key==='Enter') parseAndSearch()">
+                <button class="btn-apply-search" onclick="parseAndSearch()">
+                    <i class="fas fa-search"></i> Tìm
+                </button>
+                <button class="btn-apply-search" style="background-color:#94a3b8;" onclick="clearTextSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div style="display:none">
+                <input type="number" id="sDay"><input type="number" id="sMonth">
+                <input type="number" id="sYear"><input type="number" id="sHour">
+                <input type="number" id="sMin"><input type="number" id="sSec">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Tên Thiết Bị</th><th>Hoạt Động</th><th>Thời Gian</th><th>Trạng Thái</th></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="page-info" id="pageInfo">Đang tải...</div>
+                <div class="page-btns" id="paginationNumbers"></div>
+            </div>
+        </div>
+    </main>
+    <script src="js/history.js"></script>
+</body>
+</html>

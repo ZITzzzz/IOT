@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Dashboard</title>
+    <link rel="stylesheet" href="css/style_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+        <nav class="sidebar">
+            <a href="profile.html" class="profile-header">
+                <img src="../img/profile.jpg" alt="Avatar" class="avatar-mini">
+                <span class="profile-name">Quang Việt</span>
+            </a>
+
+            <ul class="menu">
+                <li><a href="dashboard.html" class="active"><i class="fas fa-home"></i> Home / Dashboard</a></li>
+                <li><a href="datasensor.html"><i class="fas fa-list"></i> Data Sensor</a></li>
+                <li><a href="history.html"><i class="fas fa-history"></i> Action History</a></li>
+                </ul>
+        </nav>
+
+    <main class="main-content">
+        <h1 class="page-title">Hệ Thống Chăm Sóc Thông Minh</h1>
+
+        <div class="dashboard-grid">
+            <div class="top-row">
+                <div class="card card-temp">
+                    <div class="shockwave"></div><div class="shockwave"></div>
+                    <h3><i class="fas fa-thermometer-half"></i> Nhiệt độ</h3><h1 id="temp-val">--°C</h1>
+                </div>
+                <div class="card card-hum">
+                    <div class="static-drops-container">
+                        <div class="drop-shape"></div><div class="drop-shape"></div><div class="drop-shape"></div>
+                    </div>
+                    <h3><i class="fas fa-tint"></i> Độ ẩm</h3><h1 id="hum-val">--%</h1>
+                </div>
+                <div class="card card-light">
+                    <div class="sharp-burst"></div>
+                    <h3><i class="fas fa-sun"></i> Ánh sáng</h3><h1 id="light-val">-- LX</h1>
+                </div>
+            </div>
+
+            <div class="bottom-row">
+                <div class="chart-box">
+                    <canvas id="combinedChart"></canvas>
+                </div>
+
+                <section class="controls-section">
+                    <h2 class="controls-title">Điều Khiển Thiết Bị</h2>
+                    <div class="button-group">
+                        <div class="control-card-item btn-water" id="card-pump">
+                            <i class="fas fa-cog"></i> 
+                            <span id="text-pump">Van Tưới</span>
+                            <div class="loader" id="load-pump"></div>
+                            <label class="switch">
+                                <input type="checkbox" id="sw-pump" onchange="toggleDevice('pump', this)">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="control-card-item btn-heater" id="card-heater">
+                            <i class="fas fa-fire-alt"></i> 
+                            <span id="text-heater">Máy Sưởi</span>
+                            <div class="loader" id="load-heater"></div>
+                            <label class="switch">
+                                <input type="checkbox" id="sw-heater" onchange="toggleDevice('heater', this)">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="control-card-item btn-mist" id="card-mist">
+                            <i class="fas fa-spray-can"></i> 
+                            <span id="text-mist">Phun Sương</span>
+                            <div class="loader" id="load-mist"></div>
+                            <label class="switch">
+                                <input type="checkbox" id="sw-mist" onchange="toggleDevice('mist', this)">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

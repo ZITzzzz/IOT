@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dữ Liệu Cảm Biến</title>
+    <link rel="stylesheet" href="css/style_history.css">
+    <style>
+        /* Highlight màu số liệu cho dễ nhìn giống trong ảnh Data Sensor */
+        .txt-hum { color: #2563eb; font-weight: 700; }   /* Xanh dương */
+        .txt-light { color: #d97706; font-weight: 700; }  /* Cam đất */
+        .txt-temp { color: #dc2626; font-weight: 700; }   /* Đỏ */
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <a href="profile.html" class="profile-header">
+            <img src="../img/profile.jpg" alt="Avatar" class="avatar-mini">
+            <span class="profile-name">Quang Việt</span>
+        </a>
+
+        <ul class="menu">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Home / Dashboard</a></li>
+            <li><a href="datasensor.html" class="active"><i class="fas fa-list"></i> Data Sensor</a></li>
+            <li><a href="history.html"><i class="fas fa-history"></i> Action History</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <h1 class="page-title">Dữ Liệu Cảm Biến</h1>
+
+        <div class="toolbar">
+            <div class="toolbar-top">
+                <div class="filters">
+                    <select id="quickRange" class="filter-select" onchange="applyQuickFilter()">
+                        <option value="">-- Chọn nhanh --</option>
+                        <option value="30m">30 Phút trước</option>
+                        <option value="1h">1 Giờ trước</option>
+                        <option value="12h">12 Giờ trước</option>
+                        <option value="24h">24 Giờ trước</option>
+                        <option value="3d">3 Ngày trước</option>
+                    </select>
+                    <select id="limitSelect" class="filter-select" onchange="changeLimit()">
+                        <option value="10">10 / trang</option>
+                        <option value="15">15 / trang</option>
+                        <option value="20">20 / trang</option>
+                        <option value="25">25 / trang</option>
+                        <option value="30">30 / trang</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-search-row">
+                <input type="text" id="textSearch" class="text-search-input"
+                    placeholder="Tìm kiếm bất kỳ: giờ, ngày, nhiệt độ, độ ẩm, ánh sáng..."
+                    oninput="debouncedSearch()" onkeydown="if(event.key==='Enter') doSearch()">
+                <button class="btn-apply-search" onclick="doSearch()">
+                    <i class="fas fa-search"></i> Tìm
+                </button>
+                <button class="btn-apply-search" style="background-color:#94a3b8;" onclick="clearTextSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div style="display:none">
+                <input type="number" id="sDay"><input type="number" id="sMonth">
+                <input type="number" id="sYear"><input type="number" id="sHour">
+                <input type="number" id="sMin"><input type="number" id="sSec">
+                <input type="number" id="minTemp"><input type="number" id="maxTemp">
+                <input type="number" id="minHum"><input type="number" id="maxHum">
+                <input type="number" id="minLight"><input type="number" id="maxLight">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Độ Ẩm</th>
+                        <th>Ánh Sáng</th>
+                        <th>Nhiệt Độ</th>
+                        <th>Thời Gian</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="page-info" id="pageInfo">Đang tải...</div>
+                
+                <div class="page-btns">
+                    <div id="paginationNumbers" style="display: flex; gap: 5px;"></div>
+                    
+                    <div class="goto-page">
+                        <span>Đến trang:</span>
+                        <input type="number" id="gotoInput" min="1">
+                        <button class="btn-go" onclick="goToPage()">Go</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/sensor.js"></script>
+</body>
+</html>

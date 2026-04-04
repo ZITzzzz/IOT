@@ -1,0 +1,181 @@
+/* --- GLOBAL RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #dbeafe; display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 240px; background-color: #bfdbfe; border-right: 1px solid #93c5fd; display: flex; flex-direction: column; flex-shrink: 0; }
+        .profile-nav { padding: 30px 20px; font-weight: bold; font-size: 1.1rem; color: #1e40af; text-decoration: underline; cursor: pointer; }
+        
+        .menu { list-style: none; margin-top: 10px; }
+        .menu li { border-top: 1px solid #93c5fd; border-bottom: 1px solid #93c5fd; }
+        .menu li:first-child { border-bottom: none; }
+        .menu li a { padding: 15px 20px; color: #1e3a8a; text-decoration: none; display: flex; align-items: center; gap: 15px; font-weight: 500; transition: 0.2s; }
+        .menu li a:hover, .menu li a.active { background-color: #93c5fd; }
+        /* --- SIDEBAR PROFILE HEADER --- */
+
+.profile-header {
+    display: flex;
+    align-items: center;    /* Căn giữa dọc */
+    gap: 15px;              /* Khoảng cách giữa ảnh và tên */
+    padding: 30px 20px;     
+    text-decoration: none;  /* QUAN TRỌNG: Bỏ gạch chân ở tên */
+    border-bottom: 1px solid rgba(147, 197, 253, 0.5);
+    transition: background 0.3s;
+    cursor: pointer;
+}
+
+.profile-header:hover {
+    background-color: #93c5fd; /* Hiệu ứng khi di chuột */
+}
+
+/* Style cho ảnh đại diện tròn */
+.avatar-mini {
+    width: 50px;            /* Kích thước ảnh */
+    height: 50px;
+    border-radius: 50%;     /* Bo tròn 100% */
+    object-fit: cover;      /* Cắt ảnh vừa khung tròn, không bị méo */
+    border: 2px solid white;/* Viền trắng cho nổi bật */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Style cho tên */
+.profile-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1e40af;         /* Màu xanh đậm */
+    text-decoration: none;  /* Đảm bảo không gạch chân */
+}
+        /* --- MAIN CONTENT --- */
+        .main-content { 
+            flex: 1; display: flex; flex-direction: column; 
+            padding: 30px 40px; 
+            background: linear-gradient(to right, #e0f2fe, #f0f9ff); 
+            overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+        }
+
+        .page-title { font-size: 2rem; color: #1e40af; margin-bottom: 30px; font-weight: 600; }
+
+        /* --- 1. PROFILE CARD SECTION --- */
+        .profile-card {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #dbeafe;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .user-info h2 {
+            font-size: 2.2rem;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px 30px;
+            margin-top: 20px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        /* --- 2. RESOURCES GRID SECTION --- */
+        .section-title {
+            font-size: 1.5rem;
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-weight: 600;
+            border-left: 5px solid #3b82f6;
+            padding-left: 15px;
+        }
+
+        .resources-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .resource-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .resource-icon { font-size: 3rem; margin-bottom: 5px; }
+        .resource-name { font-size: 1.1rem; font-weight: 700; color: #334155; }
+        .resource-desc { font-size: 0.9rem; color: #94a3b8; text-align: center; }
+
+        /* Màu thương hiệu riêng cho từng thẻ */
+        .card-postman:hover { border-color: #FF6C37; }
+        .card-postman .resource-icon { color: #FF6C37; }
+
+        .card-github:hover { border-color: #333; }
+        .card-github .resource-icon { color: #333; }
+
+        .card-figma:hover { border-color: #A259FF; }
+        .card-figma .resource-icon { color: #A259FF; }
+
+        .card-pdf:hover { border-color: #ef4444; }
+        .card-pdf .resource-icon { color: #ef4444; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-card { flex-direction: column; text-align: center; padding: 30px; gap: 20px; }
+            .info-grid { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+            .info-label { justify-content: center; }
+        }
