@@ -19,8 +19,12 @@ module.exports = (mqttClient, io) => {
         const [rows] = await db.execute(`
             SELECT d.name,
                 IFNULL(
-                    (SELECT ah.status FROM action_history ah
-                     WHERE ah.device_id = d.id AND ah.status IN ('ON', 'OFF')
+                    (SELECT CASE
+                                WHEN ah.action IN ('ON', 'TURN ON') THEN 'ON'
+                                ELSE 'OFF'
+                            END
+                     FROM action_history ah
+                     WHERE ah.device_id = d.id
                      ORDER BY ah.created_at DESC LIMIT 1),
                     'OFF'
                 ) AS current_status

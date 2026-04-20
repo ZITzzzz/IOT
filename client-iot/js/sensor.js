@@ -2,6 +2,45 @@ const API_URL = 'http://localhost:5000/api';
 let currentLimit = 10;
 let searchTimer = null;
 
+function copyTime(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        btn.title = 'Đã copy!';
+        setTimeout(() => btn.title = 'Copy', 1500);
+    });
+}
+
+// Parse text thành date/datetime có cấu trúc.
+// Trả về null nếu là time-only (HH:MM) hoặc plain text → dùng LIKE/exact-match như cũ.
+function parseDateTimeSearch(text) {
+    const now = new Date();
+
+    // Loại trừ time-only (HH | HH:MM | HH:MM:SS) → xử lý riêng qua backend
+    if (/^(\d{1,2})(?::(\d{2})(?::(\d{2}))?)?$/.test(text)) return null;
+
+    // Chỉ ngày: "26/3" | "26/3/2026"
+    const dateOnly = text.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?$/);
+    if (dateOnly) {
+        const [, d, m, y] = dateOnly;
+        return { date: new Date(+(y||now.getFullYear()), +m-1, +d), dateOnly: true, hasSeconds: false };
+    }
+
+    // Ngày+giờ vi-VN: "20:25 26/3" | "20:25 26/3/2026" | "20:25:16 26/3/2026"
+    const viMatch = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s+(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?$/);
+    if (viMatch) {
+        const [, h, min, s, d, m, y] = viMatch;
+        return { date: new Date(+(y||now.getFullYear()), +m-1, +d, +h, +min, +(s||0)), dateOnly: false, hasSeconds: !!s };
+    }
+
+    // ISO: "2026-03-26" | "2026-03-26 20:25" | "2026-03-26 20:25:16"
+    const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (isoMatch) {
+        const [, y, m, d, h, min, s] = isoMatch;
+        return { date: new Date(+y, +m-1, +d, +(h||0), +(min||0), +(s||0)), dateOnly: !h, hasSeconds: !!s };
+    }
+
+    return null;
+}
+
 function toggleSearchPanel() {
     document.getElementById('searchPanel').classList.toggle('active');
 }
@@ -31,6 +70,8 @@ function resetSearch() {
     ['sDay','sMonth','sYear','sHour','sMin','sSec'].forEach(id => {
         document.getElementById(id).value = '';
     });
+    const ss = document.getElementById('sensorSelect');
+    if (ss) ss.value = '';
     ['minTemp','maxTemp','minHum','maxHum','minLight','maxLight'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
@@ -83,13 +124,39 @@ async function loadData(page = 1) {
         }
     }
 
-    let url = `${API_URL}/sensor-history?page=${page}&limit=${currentLimit}`;
-    if (startDate) url += `&start_date=${encodeURIComponent(startDate)}`;
-    if (endDate)   url += `&end_date=${encodeURIComponent(endDate)}`;
-
-    // Tìm kiếm tự do
+    // Xử lý text search: date/datetime → start_date/end_date; HH:MM / plain text → search param
     const searchText = document.getElementById('textSearch')?.value.trim();
-    if (searchText) url += `&search=${encodeURIComponent(searchText)}`;
+    let searchParam = '';
+    if (searchText) {
+        const parsed = parseDateTimeSearch(searchText);
+        if (parsed && !isNaN(parsed.date)) {
+            // Ghi đè date range từ quick filter bằng date parse từ text
+            const pd = parsed.date;
+            const ds = `${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}-${String(pd.getDate()).padStart(2,'0')}`;
+            if (parsed.dateOnly) {
+                startDate = `${ds} 00:00:00`;
+                endDate   = `${ds} 23:59:59`;
+            } else {
+                const hh = String(pd.getHours()).padStart(2,'0');
+                const mm = String(pd.getMinutes()).padStart(2,'0');
+                const ss = parsed.hasSeconds ? String(pd.getSeconds()).padStart(2,'0') : '00';
+                startDate = `${ds} ${hh}:${mm}:${ss}`;
+                endDate   = parsed.hasSeconds ? startDate : `${ds} ${hh}:${mm}:59`;
+            }
+        } else {
+            // HH:MM (backend exact match) hoặc plain text (LIKE)
+            searchParam = searchText;
+        }
+    }
+
+    let url = `${API_URL}/sensor-history?page=${page}&limit=${currentLimit}`;
+    if (startDate)  url += `&start_date=${encodeURIComponent(startDate)}`;
+    if (endDate)    url += `&end_date=${encodeURIComponent(endDate)}`;
+    if (searchParam) url += `&search=${encodeURIComponent(searchParam)}`;
+
+    // Lọc theo loại cảm biến (chỉ áp dụng khi có searchParam dạng LIKE)
+    const sensorField = document.getElementById('sensorSelect')?.value;
+    if (sensorField && searchParam) url += `&sensor_field=${sensorField}`;
 
     // Sensor value filters
     const minTemp  = document.getElementById('minTemp')?.value;
@@ -125,7 +192,13 @@ async function loadData(page = 1) {
                         <td class="txt-hum">${parseFloat(item.humidity).toFixed(1)}%</td>
                         <td class="txt-light">${parseFloat(item.light).toFixed(1)} LUX</td>
                         <td class="txt-temp">${parseFloat(item.temperature).toFixed(1)}°C</td>
-                        <td>${dateDisplay}</td>
+                        <td style="white-space:nowrap">
+                            ${dateDisplay}
+                            <button onclick="copyTime('${dateDisplay}', this)" title="Copy"
+                                style="background:none;border:none;cursor:pointer;color:#94a3b8;padding:0 3px;vertical-align:middle;font-size:0.85em">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });

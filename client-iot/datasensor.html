@@ -40,19 +40,25 @@
                         <option value="24h">24 Giờ trước</option>
                         <option value="3d">3 Ngày trước</option>
                     </select>
-                    <select id="limitSelect" class="filter-select" onchange="changeLimit()">
-                        <option value="10">10 / trang</option>
-                        <option value="15">15 / trang</option>
-                        <option value="20">20 / trang</option>
-                        <option value="25">25 / trang</option>
-                        <option value="30">30 / trang</option>
-                    </select>
                 </div>
+                <select id="limitSelect" class="filter-select" onchange="changeLimit()">
+                    <option value="10">10 / trang</option>
+                    <option value="15">15 / trang</option>
+                    <option value="20">20 / trang</option>
+                    <option value="25">25 / trang</option>
+                    <option value="30">30 / trang</option>
+                </select>
             </div>
 
             <div class="text-search-row">
+                <select id="sensorSelect" class="filter-select" onchange="loadData(1)">
+                    <option value="">Tất cả cảm biến</option>
+                    <option value="temperature">Nhiệt độ</option>
+                    <option value="humidity">Độ ẩm</option>
+                    <option value="light">Ánh sáng</option>
+                </select>
                 <input type="text" id="textSearch" class="text-search-input"
-                    placeholder="Tìm kiếm bất kỳ: giờ, ngày, nhiệt độ, độ ẩm, ánh sáng..."
+                    placeholder="Tìm kiếm: giờ, ngày, giá trị cảm biến..."
                     oninput="debouncedSearch()" onkeydown="if(event.key==='Enter') doSearch()">
                 <button class="btn-apply-search" onclick="doSearch()">
                     <i class="fas fa-search"></i> Tìm

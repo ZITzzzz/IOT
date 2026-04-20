@@ -107,6 +107,7 @@ const initMqtt = (io) => {
                     if (dbName) {
                         const [dev] = await db.execute('SELECT id FROM devices WHERE name = ?', [dbName]);
                         if (dev.length > 0) {
+                            const dbAction = action === 'ON' ? 'TURN ON' : 'TURN OFF';
                             const [result] = await db.execute(
                                 `UPDATE action_history SET status = ?
                                  WHERE id = (
@@ -116,12 +117,12 @@ const initMqtt = (io) => {
                                          ORDER BY created_at DESC LIMIT 1
                                      ) AS t
                                  )`,
-                                [finalStatus, dev[0].id, action]
+                                [finalStatus, dev[0].id, dbAction]
                             );
                             if (result.affectedRows === 0) {
                                 await db.execute(
                                     'INSERT INTO action_history (device_id, action, status) VALUES (?, ?, ?)',
-                                    [dev[0].id, action, finalStatus]
+                                    [dev[0].id, dbAction, finalStatus]
                                 );
                             }
                         }

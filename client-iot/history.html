@@ -35,24 +35,31 @@
 
                     <select id="actionFilter" class="filter-select" onchange="loadHistory(1)">
                         <option value="all">Tất cả hành động</option>
-                        <option value="ON">ON</option>
-                        <option value="OFF">OFF</option>
+                        <option value="TURN ON">TURN ON</option>
+                        <option value="TURN OFF">TURN OFF</option>
                     </select>
 
-                    <select id="limitSelect" class="filter-select" onchange="changeLimit()">
-                        <option value="10">10 / trang</option>
-                        <option value="15">15 / trang</option>
-                        <option value="20">20 / trang</option>
-                        <option value="25">25 / trang</option>
-                        <option value="30">30 / trang</option>
+                    <select id="statusFilter" class="filter-select" onchange="loadHistory(1)">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                        <option value="LOADING">LOADING</option>
                     </select>
                 </div>
+                <select id="limitSelect" class="filter-select" onchange="changeLimit()">
+                    <option value="10">10 / trang</option>
+                    <option value="15">15 / trang</option>
+                    <option value="20">20 / trang</option>
+                    <option value="25">25 / trang</option>
+                    <option value="30">30 / trang</option>
+                </select>
             </div>
 
             <div class="text-search-row">
                 <input type="text" id="textSearch" class="text-search-input"
                     placeholder="VD: 20:51 | 26/3 | 26/3/2026 | 20:51:16 26/3/2026"
-                    onkeydown="if(event.key==='Enter') parseAndSearch()">
+                    onkeydown="if(event.key==='Enter') parseAndSearch()"
+                    oninput="if(!this.value.trim()) clearTextSearch()">
                 <button class="btn-apply-search" onclick="parseAndSearch()">
                     <i class="fas fa-search"></i> Tìm
                 </button>

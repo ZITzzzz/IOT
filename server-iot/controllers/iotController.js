@@ -16,7 +16,8 @@ exports.getSensorHistory = async (req, res) => {
         const maxHum    = req.query.max_hum;
         const minLight  = req.query.min_light;
         const maxLight  = req.query.max_light;
-        const search    = req.query.search;
+        const search      = req.query.search;
+        const sensorField = req.query.sensor_field;
 
         let whereClause = 'WHERE 1=1';
         let params = [];
@@ -35,16 +36,58 @@ exports.getSensorHistory = async (req, res) => {
         if (maxLight) { havingConds.push('light <= ?');       havingParams.push(maxLight); }
         // Tìm kiếm tự do: khớp bất kỳ cột nào chứa chuỗi
         if (search) {
-            const like = `%${search}%`;
-            havingConds.push(`(
-                CAST(temperature AS CHAR) LIKE ?
-                OR CAST(humidity   AS CHAR) LIKE ?
-                OR CAST(light      AS CHAR) LIKE ?
-                OR DATE_FORMAT(sd.created_at, '%H:%i:%s %d/%m/%Y') LIKE ?
-                OR DATE_FORMAT(sd.created_at, '%e/%c/%Y') LIKE ?
-                OR DATE_FORMAT(sd.created_at, '%H:%i:%s %e/%c/%Y') LIKE ?
-            )`);
-            havingParams.push(like, like, like, like, like, like);
+            // Nếu search là pattern giờ:phút (HH:MM) hoặc giờ:phút:giây (HH:MM:SS)
+            // → so khớp chính xác để tránh false positive
+            const timeMatch = search.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+            if (timeMatch && +timeMatch[1] <= 23 && +timeMatch[2] <= 59) {
+                if (timeMatch[3]) {
+                    // HH:MM:SS → khớp đúng giây đó
+                    const fmt = `${String(+timeMatch[1]).padStart(2,'0')}:${timeMatch[2]}:${timeMatch[3]}`;
+                    havingConds.push(`DATE_FORMAT(sd.created_at, '%H:%i:%s') = ?`);
+                    havingParams.push(fmt);
+                } else {
+                    // HH:MM → khớp đúng phút đó (mọi ngày)
+                    const fmt = `${String(+timeMatch[1]).padStart(2,'0')}:${timeMatch[2]}`;
+                    havingConds.push(`DATE_FORMAT(sd.created_at, '%H:%i') = ?`);
+                    havingParams.push(fmt);
+                }
+            } else {
+                const fieldMap = { temperature: 'temperature', humidity: 'humidity', light: 'light' };
+                // Phát hiện nếu search là số (26, 26.7, 26.75...)
+                // → dùng ROUND thay LIKE để tránh false positive (26.75 LIKE '%26.7%' nhưng hiển thị 26.8)
+                const numMatch = /^\d+(\.\d+)?$/.test(search.trim());
+                if (numMatch) {
+                    const decimals = (search.split('.')[1] || '').length;
+                    if (sensorField && fieldMap[sensorField]) {
+                        havingConds.push(`ROUND(${fieldMap[sensorField]}, ?) = ?`);
+                        havingParams.push(decimals, parseFloat(search));
+                    } else {
+                        havingConds.push(`(
+                            ROUND(temperature, ?) = ?
+                            OR ROUND(humidity,    ?) = ?
+                            OR ROUND(light,       ?) = ?
+                        )`);
+                        havingParams.push(decimals, parseFloat(search), decimals, parseFloat(search), decimals, parseFloat(search));
+                    }
+                } else {
+                    // Chuỗi thường → LIKE
+                    const like = `%${search}%`;
+                    if (sensorField && fieldMap[sensorField]) {
+                        havingConds.push(`CAST(${fieldMap[sensorField]} AS CHAR) LIKE ?`);
+                        havingParams.push(like);
+                    } else {
+                        havingConds.push(`(
+                            CAST(temperature AS CHAR) LIKE ?
+                            OR CAST(humidity   AS CHAR) LIKE ?
+                            OR CAST(light      AS CHAR) LIKE ?
+                            OR DATE_FORMAT(sd.created_at, '%H:%i:%s %d/%m/%Y') LIKE ?
+                            OR DATE_FORMAT(sd.created_at, '%e/%c/%Y') LIKE ?
+                            OR DATE_FORMAT(sd.created_at, '%H:%i:%s %e/%c/%Y') LIKE ?
+                        )`);
+                        havingParams.push(like, like, like, like, like, like);
+                    }
+                }
+            }
         }
         const havingClause = havingConds.length ? 'HAVING ' + havingConds.join(' AND ') : '';
 
@@ -102,7 +145,7 @@ exports.getActionHistory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
 
-        const { device_id, action, start_date, end_date } = req.query;
+        const { device_id, action, status, start_date, end_date } = req.query;
 
         let sqlWhere = 'WHERE 1=1';
         let params = [];
@@ -114,6 +157,10 @@ exports.getActionHistory = async (req, res) => {
         if (action && action !== 'all') {
             sqlWhere += ' AND h.action = ?';
             params.push(action);
+        }
+        if (status && status !== 'all') {
+            sqlWhere += ' AND h.status = ?';
+            params.push(status);
         }
         if (start_date) {
             sqlWhere += ' AND h.created_at >= ?';
@@ -164,9 +211,10 @@ exports.controlDevice = async (req, res, mqttClient) => {
         if (dbName) {
             const [dev] = await db.execute('SELECT id FROM devices WHERE name = ?', [dbName]);
             if (dev.length > 0) {
+                const dbAction = action === 'ON' ? 'TURN ON' : 'TURN OFF';
                 await db.execute(
                     'INSERT INTO action_history (device_id, action, status) VALUES (?, ?, ?)',
-                    [dev[0].id, action, 'LOADING']
+                    [dev[0].id, dbAction, 'LOADING']
                 );
             }
         }

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hướng dẫn Test API - Postman Web</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; }
+
+        header {
+            background: linear-gradient(135deg, #1a1f2e, #252b3b);
+            border-bottom: 3px solid #ff6c37;
+            padding: 24px 40px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        header i { font-size: 2rem; color: #ff6c37; }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header p  { font-size: 0.83rem; color: #94a3b8; margin-top: 3px; }
+        .badge {
+            margin-left: auto; background: #ff6c37; color: #fff;
+            font-size: 0.72rem; font-weight: 700; padding: 4px 12px;
+            border-radius: 20px; letter-spacing: 1px;
+        }
+
+        .container { max-width: 900px; margin: 36px auto; padding: 0 24px 60px; }
+
+        /* Section title */
+        .section-title {
+            font-size: 1.1rem; font-weight: 700; color: #fff;
+            margin: 36px 0 16px;
+            padding-bottom: 10px; border-bottom: 1px solid #2d3348;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-title i { color: #ff6c37; }
+
+        /* Info box */
+        .info-box {
+            background: #1a1f2e; border: 1px solid #2d3348;
+            border-radius: 12px; padding: 20px 24px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px;
+            margin-bottom: 28px;
+        }
+        .info-item .label { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing:.5px; margin-bottom: 4px; }
+        .info-item .value { font-family: monospace; font-size: 0.9rem; color: #93c5fd; }
+
+        /* Steps */
+        .steps { list-style: none; counter-reset: step; }
+        .steps li {
+            counter-increment: step;
+            display: flex; align-items: flex-start; gap: 14px;
+            margin-bottom: 18px; font-size: 0.88rem; line-height: 1.65;
+        }
+        .steps li::before {
+            content: counter(step);
+            background: #ff6c37; color: #fff;
+            font-weight: 700; font-size: 0.72rem;
+            min-width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 2px;
+        }
+        .steps li strong { color: #fff; }
+        code {
+            font-family: monospace; background: #0a0d14;
+            padding: 1px 7px; border-radius: 4px;
+            color: #fb923c; font-size: 0.83rem;
+        }
+
+        /* Method badge */
+        .get  { background:#0d3d2b; color:#34d399; border:1px solid #34d399; font-size:.7rem; font-weight:800; padding:2px 8px; border-radius:5px; }
+        .post { background:#3d1f00; color:#fb923c; border:1px solid #fb923c; font-size:.7rem; font-weight:800; padding:2px 8px; border-radius:5px; }
+
+        /* API Table */
+        .api-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+        .api-table th { background:#0f1117; color:#94a3b8; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; padding:10px 14px; text-align:left; }
+        .api-table td { padding:11px 14px; border-bottom:1px solid #1e2438; vertical-align:top; }
+        .api-table tr:last-child td { border-bottom: none; }
+        .endpoint-col { font-family:monospace; color:#93c5fd; }
+        .api-table { background:#1a1f2e; border:1px solid #2d3348; border-radius:12px; overflow:hidden; }
+
+        /* Code block */
+        .code-block {
+            background:#0a0d14; border:1px solid #2d3348; border-radius:8px;
+            padding:16px 20px; font-family:monospace; font-size:.82rem;
+            line-height:1.7; overflow-x:auto; position:relative; margin: 10px 0;
+        }
+        .copy-btn {
+            position:absolute; top:10px; right:10px;
+            background:#2d3348; border:none; color:#94a3b8;
+            font-size:.72rem; padding:4px 10px; border-radius:6px; cursor:pointer;
+        }
+        .copy-btn:hover { background:#ff6c37; color:#fff; }
+        .jk { color:#7dd3fc; } .js { color:#86efac; } .jn { color:#fbbf24; }
+
+        /* Note */
+        .note {
+            display:flex; align-items:flex-start; gap:10px;
+            border-radius:8px; padding:12px 16px;
+            font-size:.83rem; margin-top:16px;
+        }
+        .note.info  { background:#1e2a1e; border:1px solid #166534; color:#86efac; }
+        .note.warn  { background:#2a1e00; border:1px solid #92400e; color:#fcd34d; }
+        .note i { flex-shrink:0; margin-top:2px; }
+
+        /* Params table */
+        .params-table { width:100%; border-collapse:collapse; font-size:.83rem; margin-top:12px; }
+        .params-table th { color:#64748b; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; padding:8px 12px; text-align:left; border-bottom:1px solid #2d3348; }
+        .params-table td { padding:9px 12px; border-bottom:1px solid #1e2438; }
+        .params-table tr:last-child td { border-bottom:none; }
+        .pk { font-family:monospace; color:#93c5fd; }
+        .opt { font-size:.7rem; background:#1e3a4a; color:#7dd3fc; padding:1px 6px; border-radius:4px; }
+        .req { font-size:.7rem; background:#7f1d1d; color:#fca5a5; padding:1px 6px; border-radius:4px; }
+
+        /* Card wrapper */
+        .card { background:#1a1f2e; border:1px solid #2d3348; border-radius:14px; padding:24px; margin-bottom:24px; }
+        .card h3 {
+            font-size:.88rem; color:#94a3b8; text-transform:uppercase;
+            letter-spacing:.5px; margin-bottom:14px;
+            display:flex; align-items:center; gap:8px;
+        }
+
+        @media(max-width:600px) { header { flex-wrap:wrap; } .badge { margin-left:0; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <i class="fas fa-rocket"></i>
+    <div>
+        <h1>IoT Smart Plant Care — Hướng dẫn Test API</h1>
+        <p>Kiểm thử REST API bằng Postman Web · Base URL: <code style="background:none;color:#fb923c">http://localhost:5000</code></p>
+    </div>
+    <span class="badge">POSTMAN WEB</span>
+</header>
+
+<div class="container">
+
+    <!-- ===== BƯỚC CHUẨN BỊ ===== -->
+    <p class="section-title"><i class="fas fa-wrench"></i> Bước 1 — Chuẩn bị Postman Web</p>
+
+    <div class="card">
+        <h3><i class="fas fa-globe"></i> Truy cập & tạo Workspace</h3>
+        <ol class="steps">
+            <li>Mở trình duyệt, vào <strong>web.postman.co</strong> → đăng nhập tài khoản (tạo miễn phí nếu chưa có).</li>
+            <li>Nhấn <strong>Workspaces</strong> ở thanh trên → <strong>Create Workspace</strong> → đặt tên <code>IoT Plant API</code>.</li>
+            <li>Vào workspace vừa tạo → nhấn <strong>New</strong> → chọn <strong>Collection</strong> → đặt tên <code>IoT API Collection</code>.</li>
+        </ol>
+        <div class="note warn">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Postman Web không thể gọi trực tiếp đến <code>localhost</code> do giới hạn trình duyệt. Bạn cần cài <strong>Postman Desktop Agent</strong> (pop-up sẽ hiện tự động khi gửi request lần đầu) hoặc dùng ứng dụng Postman Desktop.</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><i class="fas fa-sliders-h"></i> Tạo Environment (biến môi trường)</h3>
+        <ol class="steps">
+            <li>Nhấn <strong>Environments</strong> ở sidebar trái → <strong>Create Environment</strong> → đặt tên <code>IoT Local</code>.</li>
+            <li>Thêm biến: <code>base_url</code> = <code>http://localhost:5000</code> → nhấn <strong>Save</strong>.</li>
+            <li>Góc trên phải Postman, chọn environment <code>IoT Local</code> từ dropdown.</li>
+            <li>Từ nay dùng <code>{{base_url}}</code> thay cho địa chỉ đầy đủ trong mọi request.</li>
+        </ol>
+    </div>
+
+    <!-- ===== THÔNG TIN SERVER ===== -->
+    <p class="section-title"><i class="fas fa-server"></i> Thông tin Server</p>
+
+    <div class="info-box">
+        <div class="info-item"><div class="label">Base URL</div><div class="value">http://localhost:5000</div></div>
+        <div class="info-item"><div class="label">API Prefix</div><div class="value">/api</div></div>
+        <div class="info-item"><div class="label">Content-Type</div><div class="value">application/json</div></div>
+        <div class="info-item"><div class="label">Auth</div><div class="value">Không yêu cầu</div></div>
+    </div>
+
+    <!-- ===== DANH SÁCH API ===== -->
+    <p class="section-title"><i class="fas fa-list-ul"></i> Danh sách Endpoint</p>
+
+    <table class="api-table">
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Mô tả</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><span class="get">GET</span></td>
+                <td class="endpoint-col">/api/devices</td>
+                <td>Danh sách thiết bị + trạng thái hiện tại</td>
+            </tr>
+            <tr>
+                <td><span class="get">GET</span></td>
+                <td class="endpoint-col">/api/sensor-history</td>
+                <td>Lịch sử cảm biến (phân trang, bộ lọc)</td>
+            </tr>
+            <tr>
+                <td><span class="get">GET</span></td>
+                <td class="endpoint-col">/api/action-history</td>
+                <td>Lịch sử điều khiển thiết bị (phân trang, bộ lọc)</td>
+            </tr>
+            <tr>
+                <td><span class="post">POST</span></td>
+                <td class="endpoint-col">/api/control</td>
+                <td>Gửi lệnh bật/tắt thiết bị qua MQTT</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ===== GET /api/devices ===== -->
+    <p class="section-title"><i class="fas fa-plug"></i> GET /api/devices</p>
+
+    <div class="card">
+        <h3><i class="fas fa-list-check"></i> Các bước thực hiện</h3>
+        <ol class="steps">
+            <li>Trong collection, nhấn dấu <strong>+</strong> → chọn <strong>Add Request</strong> → đặt tên <code>Get Devices</code>.</li>
+            <li>Chọn method <strong>GET</strong>. Nhập URL: <code>{{base_url}}/api/devices</code></li>
+            <li>Không cần thêm Params hay Body. Nhấn <strong>Send</strong>.</li>
+            <li>Kết quả trả về mảng JSON gồm <code>name</code>, <code>current_status</code>, <code>code</code>.</li>
+        </ol>
+
+        <h3 style="margin-top:20px"><i class="fas fa-arrow-down"></i> Response mẫu</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>[
+  { <span class="jk">"name"</span>: <span class="js">"pump"</span>,   <span class="jk">"current_status"</span>: <span class="js">"OFF"</span>, <span class="jk">"code"</span>: <span class="js">"pump"</span>   },
+  { <span class="jk">"name"</span>: <span class="js">"heater"</span>, <span class="jk">"current_status"</span>: <span class="js">"ON"</span>,  <span class="jk">"code"</span>: <span class="js">"heater"</span> },
+  { <span class="jk">"name"</span>: <span class="js">"mist"</span>,   <span class="jk">"current_status"</span>: <span class="js">"OFF"</span>, <span class="jk">"code"</span>: <span class="js">"mist"</span>   }
+]</pre>
+        </div>
+        <div class="note info">
+            <i class="fas fa-info-circle"></i>
+            <span><code>current_status</code> là trạng thái cuối cùng ghi nhận trong <code>action_history</code>. Mặc định <code>"OFF"</code> nếu chưa có lịch sử.</span>
+        </div>
+    </div>
+
+    <!-- ===== GET /api/sensor-history ===== -->
+    <p class="section-title"><i class="fas fa-thermometer-half"></i> GET /api/sensor-history</p>
+
+    <div class="card">
+        <h3><i class="fas fa-filter"></i> Query Parameters</h3>
+        <table class="params-table">
+            <thead><tr><th>Tham số</th><th>Kiểu</th><th></th><th>Mô tả / Ví dụ</th></tr></thead>
+            <tbody>
+                <tr><td class="pk">page</td><td>number</td><td><span class="opt">optional</span></td><td>Số trang, mặc định <code>1</code></td></tr>
+                <tr><td class="pk">limit</td><td>number</td><td><span class="opt">optional</span></td><td>Số bản ghi/trang, mặc định <code>10</code></td></tr>
+                <tr><td class="pk">start_date</td><td>string</td><td><span class="opt">optional</span></td><td><code>2025-01-01 00:00:00</code></td></tr>
+                <tr><td class="pk">end_date</td><td>string</td><td><span class="opt">optional</span></td><td><code>2025-12-31 23:59:59</code></td></tr>
+                <tr><td class="pk">min_temp / max_temp</td><td>number</td><td><span class="opt">optional</span></td><td>Khoảng nhiệt độ °C, ví dụ <code>25</code> / <code>35</code></td></tr>
+                <tr><td class="pk">min_hum / max_hum</td><td>number</td><td><span class="opt">optional</span></td><td>Khoảng độ ẩm %, ví dụ <code>40</code> / <code>80</code></td></tr>
+                <tr><td class="pk">min_light / max_light</td><td>number</td><td><span class="opt">optional</span></td><td>Khoảng ánh sáng lux</td></tr>
+                <tr><td class="pk">search</td><td>string</td><td><span class="opt">optional</span></td><td>Tìm tự do theo giá trị hoặc thời gian</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:20px"><i class="fas fa-list-check"></i> Các bước thực hiện</h3>
+        <ol class="steps">
+            <li>Tạo request mới, đặt tên <code>Sensor History</code>. Method <strong>GET</strong>, URL <code>{{base_url}}/api/sensor-history</code>.</li>
+            <li>Tab <strong>Params</strong> → thêm key–value theo bảng trên. Ví dụ cơ bản:<br>
+                <code>page</code> = <code>1</code> &nbsp;|&nbsp; <code>limit</code> = <code>5</code>
+            </li>
+            <li>Nhấn <strong>Send</strong>. Kiểm tra <code>pagination.totalPages</code> để biết có bao nhiêu trang.</li>
+        </ol>
+
+        <h3 style="margin-top:20px"><i class="fas fa-arrow-down"></i> Response mẫu</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>{
+  <span class="jk">"data"</span>: [
+    {
+      <span class="jk">"id"</span>: <span class="jn">42</span>,
+      <span class="jk">"temperature"</span>: <span class="jn">28.5</span>,
+      <span class="jk">"humidity"</span>: <span class="jn">65.0</span>,
+      <span class="jk">"light"</span>: <span class="jn">320</span>,
+      <span class="jk">"created_at"</span>: <span class="js">"2025-06-15T08:30:00.000Z"</span>
+    }
+  ],
+  <span class="jk">"pagination"</span>: {
+    <span class="jk">"page"</span>: <span class="jn">1</span>, <span class="jk">"limit"</span>: <span class="jn">10</span>,
+    <span class="jk">"total"</span>: <span class="jn">254</span>, <span class="jk">"totalPages"</span>: <span class="jn">26</span>
+  }
+}</pre>
+        </div>
+    </div>
+
+    <!-- ===== GET /api/action-history ===== -->
+    <p class="section-title"><i class="fas fa-history"></i> GET /api/action-history</p>
+
+    <div class="card">
+        <h3><i class="fas fa-filter"></i> Query Parameters</h3>
+        <table class="params-table">
+            <thead><tr><th>Tham số</th><th>Kiểu</th><th></th><th>Mô tả / Ví dụ</th></tr></thead>
+            <tbody>
+                <tr><td class="pk">page</td><td>number</td><td><span class="opt">optional</span></td><td>Mặc định <code>1</code></td></tr>
+                <tr><td class="pk">limit</td><td>number</td><td><span class="opt">optional</span></td><td>Mặc định <code>10</code></td></tr>
+                <tr><td class="pk">device_id</td><td>number | "all"</td><td><span class="opt">optional</span></td><td>ID thiết bị (lấy từ <code>/api/devices</code>), bỏ qua = tất cả</td></tr>
+                <tr><td class="pk">action</td><td>"ON" | "OFF" | "all"</td><td><span class="opt">optional</span></td><td>Lọc lệnh bật hoặc tắt</td></tr>
+                <tr><td class="pk">start_date</td><td>string</td><td><span class="opt">optional</span></td><td><code>2025-01-01 00:00:00</code></td></tr>
+                <tr><td class="pk">end_date</td><td>string</td><td><span class="opt">optional</span></td><td><code>2025-12-31 23:59:59</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:20px"><i class="fas fa-list-check"></i> Các bước thực hiện</h3>
+        <ol class="steps">
+            <li>Tạo request <code>Action History</code>, method <strong>GET</strong>, URL <code>{{base_url}}/api/action-history</code>.</li>
+            <li>Tab <strong>Params</strong>. Ví dụ lọc lệnh BẬT: <code>action</code> = <code>ON</code></li>
+            <li>Lọc theo thiết bị: thêm <code>device_id</code> = ID lấy từ kết quả <code>GET /api/devices</code>.</li>
+            <li>Trường <code>status</code> trong response có thể là: <code>LOADING</code> | <code>SUCCESS</code> | <code>ERROR</code>.</li>
+        </ol>
+
+        <h3 style="margin-top:20px"><i class="fas fa-arrow-down"></i> Response mẫu</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>{
+  <span class="jk">"data"</span>: [
+    {
+      <span class="jk">"id"</span>: <span class="jn">15</span>,
+      <span class="jk">"device_name"</span>: <span class="js">"pump"</span>,
+      <span class="jk">"action"</span>: <span class="js">"ON"</span>,
+      <span class="jk">"status"</span>: <span class="js">"SUCCESS"</span>,
+      <span class="jk">"created_at"</span>: <span class="js">"2025-06-15T09:00:00.000Z"</span>
+    }
+  ],
+  <span class="jk">"pagination"</span>: { <span class="jk">"page"</span>: <span class="jn">1</span>, <span class="jk">"limit"</span>: <span class="jn">10</span>, <span class="jk">"total"</span>: <span class="jn">87</span>, <span class="jk">"totalPages"</span>: <span class="jn">9</span> }
+}</pre>
+        </div>
+    </div>
+
+    <!-- ===== POST /api/control ===== -->
+    <p class="section-title"><i class="fas fa-gamepad"></i> POST /api/control</p>
+
+    <div class="card">
+        <h3><i class="fas fa-code"></i> Request Body (JSON)</h3>
+        <table class="params-table">
+            <thead><tr><th>Field</th><th>Kiểu</th><th></th><th>Giá trị hợp lệ</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td class="pk">code</td><td>string</td><td><span class="req">required</span></td>
+                    <td><code>pump</code> | <code>heater</code> | <code>mist</code> | <code>all_lights</code> | <code>blink_mode</code></td>
+                </tr>
+                <tr>
+                    <td class="pk">action</td><td>string</td><td><span class="req">required</span></td>
+                    <td><code>"ON"</code> hoặc <code>"OFF"</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:20px"><i class="fas fa-list-check"></i> Các bước thực hiện</h3>
+        <ol class="steps">
+            <li>Tạo request <code>Control Device</code>, method <strong>POST</strong>, URL <code>{{base_url}}/api/control</code>.</li>
+            <li>Tab <strong>Headers</strong> → thêm: <code>Content-Type</code> = <code>application/json</code></li>
+            <li>Tab <strong>Body</strong> → chọn <strong>raw</strong> → dropdown chọn <strong>JSON</strong>.</li>
+            <li>Dán body vào ô soạn thảo (ví dụ bật máy bơm):
+                <div class="code-block" style="margin-top:8px">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>{
+  <span class="jk">"code"</span>: <span class="js">"pump"</span>,
+  <span class="jk">"action"</span>: <span class="js">"ON"</span>
+}</pre>
+                </div>
+            </li>
+            <li>Nhấn <strong>Send</strong>. Server trả <code>200 OK</code> ngay và publish lệnh lên MQTT broker.</li>
+            <li>ESP32 nhận lệnh → gửi phản hồi <code>device_status_feedback</code> → server cập nhật DB và phát <code>device_update</code> qua Socket.io đến frontend.</li>
+        </ol>
+
+        <h3 style="margin-top:20px"><i class="fas fa-arrow-down"></i> Response mẫu</h3>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span style="color:#64748b">// HTTP 200 — Thành công</span>
+{ <span class="jk">"success"</span>: <span style="color:#c084fc">true</span>, <span class="jk">"message"</span>: <span class="js">"Command sent to MQTT"</span> }
+
+<span style="color:#64748b">// HTTP 500 — MQTT lỗi</span>
+{ <span class="jk">"error"</span>: <span class="js">"MQTT client not connected"</span> }</pre>
+        </div>
+
+        <div class="note warn" style="margin-top:16px">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>API này cần MQTT broker và ESP32 đang hoạt động để hoàn thành luồng đầy đủ. Khi test chỉ có server, response vẫn là <code>200</code> nhưng DB sẽ giữ trạng thái <code>LOADING</code> vĩnh viễn.</span>
+        </div>
+    </div>
+
+    <!-- ===== DEVICE CODE TABLE ===== -->
+    <p class="section-title"><i class="fas fa-microchip"></i> Mã thiết bị hợp lệ</p>
+
+    <table class="api-table">
+        <thead><tr><th>code</th><th>Thiết bị</th><th>Pin ESP32</th></tr></thead>
+        <tbody>
+            <tr><td class="endpoint-col">pump</td><td>Máy bơm nước</td><td style="color:#fbbf24">GPIO 5</td></tr>
+            <tr><td class="endpoint-col">heater</td><td>Máy sưởi</td><td style="color:#fbbf24">GPIO 3</td></tr>
+            <tr><td class="endpoint-col">mist</td><td>Máy phun sương</td><td style="color:#fbbf24">GPIO 1</td></tr>
+            <tr><td class="endpoint-col">all_lights</td><td>Toàn bộ đèn</td><td style="color:#64748b">—</td></tr>
+            <tr><td class="endpoint-col">blink_mode</td><td>Chế độ nhấp nháy đèn</td><td style="color:#64748b">—</td></tr>
+        </tbody>
+    </table>
+
+    <div class="note info" style="margin-top:28px">
+        <i class="fas fa-lightbulb"></i>
+        <span>Dự án dùng <strong>Socket.io</strong> cho dữ liệu real-time. Postman Web hỗ trợ test Socket.io qua <strong>New → Socket.IO</strong> với URL <code>http://localhost:5000</code>. Các event cần theo dõi: <code>new_sensor</code>, <code>device_update</code>, <code>init_data</code>.</span>
+    </div>
+</div>
+
+<script>
+    function copyCode(btn) {
+        const text = btn.nextElementSibling.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+</script>
+</body>
+</html>
